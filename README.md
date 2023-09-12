@@ -12,11 +12,19 @@ build.gradle.kts:
 
 ```kotlin
 repositories {
-    mavenCentral()
-    maven(url="https://jitpack.io")
+    mavenCentral() {
+        content {
+            excludeGroup("com.github.aleixmorgadas") // improves speed
+        }
+    }
+    maven(url="https://jitpack.io") {
+        content {
+            includeGroup("com.github.aleixmorgadas")
+        }
+    }
 }
 dependencies {
-    implementation("com.github.aleixmorgadas:spring-boot-data-mongodb-multitenant:main-SNAPSHOT")
+    implementation("com.github.aleixmorgadas:spring-boot-data-mongo-multitenant:0.0.7")
 }
 ```
 
