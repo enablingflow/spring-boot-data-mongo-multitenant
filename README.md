@@ -8,6 +8,8 @@ Support for multi-tenant repositories for Spring Boot Data MongoDB.
 
 ## Install
 
+build.gradle: 
+
 ```groovy
 repositories {
     mavenCentral()
