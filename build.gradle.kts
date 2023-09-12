@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.github.aleixmorgadas"
-version = "0.0.3"
+version = "0.0.4"
 
 repositories {
     mavenCentral()
@@ -41,7 +41,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.github.aleixmorgadas"
             artifactId = "spring-boot-data-mongo-multitenant"
-            version = "0.0.3"
+            version = "0.0.4"
 
             from(components["java"])
         }
