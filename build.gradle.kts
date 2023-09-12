@@ -40,7 +40,7 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             groupId = "com.github.aleixmorgadas"
-            artifactId = "spring-boot-data-mongodb-multitenant"
+            artifactId = "spring-boot-data-mongo-multitenant"
             version = "0.0.3"
 
             from(components["java"])
