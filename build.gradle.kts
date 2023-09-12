@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.github.aleixmorgadas"
-version = "0.0.4"
+version = "0.0.5"
 
 repositories {
     mavenCentral()
@@ -31,6 +31,12 @@ tasks.bootJar {
     enabled = false
 }
 
+tasks.jar{
+    enabled = true
+    // Remove `plain` postfix from jar file name
+    archiveClassifier.set("")
+}
+
 java {
     withJavadocJar()
     withSourcesJar()
@@ -41,7 +47,6 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.github.aleixmorgadas"
             artifactId = "spring-boot-data-mongo-multitenant"
-            version = "0.0.4"
 
             from(components["java"])
         }
