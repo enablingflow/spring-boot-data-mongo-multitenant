@@ -30,3 +30,16 @@ tasks.test {
 tasks.bootJar {
     enabled = false
 }
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+}
