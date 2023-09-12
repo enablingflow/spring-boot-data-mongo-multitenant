@@ -6,14 +6,14 @@ plugins {
 }
 
 group = "com.github.aleixmorgadas"
-version = "0.0.1"
+version = "0.0.2"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.1.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
@@ -38,7 +38,11 @@ java {
 
 publishing {
     publications {
-        create<MavenPublication>("mavenJava") {
+        create<MavenPublication>("maven") {
+            groupId = "com.github.aleixmorgadas"
+            artifactId = "spring-boot-data-mongodb-multitenant"
+            version = "0.0.2"
+
             from(components["java"])
         }
     }
