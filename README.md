@@ -8,15 +8,15 @@ Support for multi-tenant repositories for Spring Boot Data MongoDB.
 
 ## Install
 
-build.gradle: 
+build.gradle.kts: 
 
-```groovy
+```kotlin
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven(url="https://jitpack.io")
 }
 dependencies {
-    implementation 'com.github.aleixmorgadas:spring-boot-data-mongodb-multitenant:main-SNAPSHOT'
+    implementation("com.github.aleixmorgadas:spring-boot-data-mongodb-multitenant:main-SNAPSHOT")
 }
 ```
 
