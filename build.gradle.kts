@@ -1,8 +1,9 @@
 plugins {
     id("java")
+    id("maven-publish")
 }
 
-group = "dev.aleixmorgadas"
+group = "com.github.aleixmorgadas"
 version = "1.0-SNAPSHOT"
 
 repositories {
