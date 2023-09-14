@@ -1,5 +1,8 @@
 # Spring Boot Data MongoDB Multi-Tenant
 
+[![](https://jitpack.io/v/aleixmorgadas/spring-boot-data-mongo-multitenant.svg)](https://jitpack.io/#aleixmorgadas/spring-boot-data-mongo-multitenant)
+![gradle workflow](https://github.com/aleixmorgadas/spring-boot-data-mongo-multitenant/actions/workflows/gradle.yml/badge.svg)
+
 :warning: Working in progress
 
 ## Introduction
