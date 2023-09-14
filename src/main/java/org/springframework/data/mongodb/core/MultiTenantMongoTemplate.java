@@ -3,10 +3,13 @@ package org.springframework.data.mongodb.core;
 import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenant;
 import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantField;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.query.Collation;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.util.List;
@@ -58,14 +61,22 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
         return super.doFindAndReplace(collectionPreparer, collectionName, multiTenantQuery, mappedFields, mappedSort, collation, entityType, replacement, options, resultType);
     }
 
-    private <S> Document multiTenantFilter(Document query, Class<S> entityClass) {
-        var multiTenantQuery = query;
-        if ((query.getClass().getName().equals("org.springframework.data.mongodb.util.EmptyDocument"))) {
+    @Override
+    protected <T> DeleteResult doRemove(String collectionName, Query query, Class<T> entityClass, boolean multi) {
+        var multiTenantQuery = multiTenantFilter(query, entityClass);
+        return super.doRemove(collectionName, multiTenantQuery, entityClass, multi);
+    }
+
+    private <S> Document multiTenantFilter(Document document, Class<S> entityClass) {
+        var multiTenantQuery = document;
+        if ((document.getClass().getName().equals("org.springframework.data.mongodb.util.EmptyDocument"))) {
             multiTenantQuery = new Document();
         }
         if (entityClass.isAnnotationPresent(MultiTenant.class)) {
+            var hasMultiTenantFilter = false;
             for (var field : entityClass.getDeclaredFields()) {
                 if (field.isAnnotationPresent(MultiTenantField.class)) {
+                    hasMultiTenantFilter = true;
                     var tenantFilter = field.getAnnotation(MultiTenantField.class);
                     var tenantFilterValue = multiTenantFilter.get(tenantFilter.mapper()).get();
                     if (tenantFilterValue != null) {
@@ -74,10 +85,41 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                         } else {
                             multiTenantQuery.put(tenantFilter.value(), tenantFilterValue);
                         }
+                    } else {
+                        throw new RuntimeException("Tenant filter value is null");
                     }
                 }
             }
+            if (!hasMultiTenantFilter) {
+                throw new RuntimeException("Entity " + entityClass.getName() + " is annotated with @MultiTenant but no @MultiTenantField is present");
+            }
         }
         return multiTenantQuery;
+    }
+
+    private <S> Query multiTenantFilter(Query query, Class<S> entityClass) {
+        if (entityClass.isAnnotationPresent(MultiTenant.class)) {
+            var hasMultiTenantFilter = false;
+            for (var field : entityClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(MultiTenantField.class)) {
+                    hasMultiTenantFilter = true;
+                    var tenantFilter = field.getAnnotation(MultiTenantField.class);
+                    var tenantFilterValue = multiTenantFilter.get(tenantFilter.mapper()).get();
+                    if (tenantFilterValue != null) {
+                        if (field.getType() == ObjectId.class) {
+                            query.addCriteria(Criteria.where(tenantFilter.value()).is(new ObjectId(tenantFilterValue)));
+                        } else {
+                            query.addCriteria(Criteria.where(tenantFilter.value()).is(tenantFilterValue));
+                        }
+                    } else {
+                        throw new RuntimeException("Tenant filter value is null");
+                    }
+                }
+            }
+            if (!hasMultiTenantFilter) {
+                throw new RuntimeException("Entity " + entityClass.getName() + " is annotated with @MultiTenant but no @MultiTenantField is present");
+            }
+        }
+        return query;
     }
 }
