@@ -1,15 +1,17 @@
 package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
+import java.util.function.Supplier;
+
 public class MultiTenantContext {
     private static final ThreadLocal<Boolean> asRoot = new ThreadLocal<>();
     private static final ThreadLocal<String> asTenant = new ThreadLocal<>();
-    private static final ThreadLocal<String> tenant = new ThreadLocal<>();
+    private static final ThreadLocal<Supplier<String>> tenant = new ThreadLocal<>();
 
     public String get() {
-        return tenant.get();
+        return tenant.get().get();
     }
 
-    public void set(String value) {
+    public void set(Supplier<String> value) {
         tenant.set(value);
     }
 

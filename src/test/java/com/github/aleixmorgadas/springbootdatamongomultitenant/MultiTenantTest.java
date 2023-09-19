@@ -43,7 +43,7 @@ public class MultiTenantTest {
     @Test
     @Order(1)
     void receivesOnlyTenantA() {
-        tenants.set("tenantA");
+        tenants.set(() -> "tenantA");
         var users = repository.findAll();
         assertEquals(2, users.size());
     }
@@ -70,7 +70,7 @@ public class MultiTenantTest {
     @Order(4)
     void deleteAllIsTenantAware() {
         repository.deleteAll();
-        tenants.set("tenantB");
+        tenants.set(() -> "tenantB");
         var users = repository.findAll();
         assert users.size() == 1;
     }

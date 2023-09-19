@@ -14,7 +14,7 @@ public class MultiTenantTestConfig {
     @Bean
     public MultiTenantContext multiTenantContext() {
         MultiTenantContext multiTenantContext = new MultiTenantContext();
-        multiTenantContext.set("tenantA");
+        multiTenantContext.set(() -> "tenantA");
         return multiTenantContext;
     }
 
