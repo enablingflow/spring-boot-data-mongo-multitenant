@@ -10,7 +10,7 @@ public class User {
     @Id
     ObjectId id;
 
-    @MultiTenantField(value = "tenantId", mapper = "default")
+    @MultiTenantField(value = "tenantId")
     String tenantId;
 
     public User(ObjectId id, String tenantId) {

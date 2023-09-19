@@ -14,8 +14,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 public class MultiTenantMongoTemplate extends MongoTemplate {
     private final MultiTenantContext multiTenantContext;
@@ -74,12 +72,15 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             multiTenantQuery = new Document();
         }
         if (entityClass.isAnnotationPresent(MultiTenant.class)) {
+            if (multiTenantContext.isRoot()) {
+                return multiTenantQuery;
+            }
             var hasMultiTenantFilter = false;
             for (var field : entityClass.getDeclaredFields()) {
                 if (field.isAnnotationPresent(MultiTenantField.class)) {
                     hasMultiTenantFilter = true;
                     var tenantFilter = field.getAnnotation(MultiTenantField.class);
-                    var tenantFilterValue = multiTenantContext.get(tenantFilter.mapper());
+                    var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
                     if (tenantFilterValue != null) {
                         if (field.getType() == ObjectId.class) {
                             multiTenantQuery.put(tenantFilter.value(), new ObjectId(tenantFilterValue));
@@ -100,17 +101,20 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
 
     private <S> Query multiTenantFilter(Query query, Class<S> entityClass) {
         if (entityClass.isAnnotationPresent(MultiTenant.class)) {
+            if (multiTenantContext.isRoot()) {
+                return query;
+            }
             var hasMultiTenantFilter = false;
             for (var field : entityClass.getDeclaredFields()) {
                 if (field.isAnnotationPresent(MultiTenantField.class)) {
                     hasMultiTenantFilter = true;
-                    var tenantFilter = field.getAnnotation(MultiTenantField.class);
-                    var tenantFilterValue = multiTenantContext.get(tenantFilter.mapper());
+                    var tenantField = field.getAnnotation(MultiTenantField.class);
+                    var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
                     if (tenantFilterValue != null) {
                         if (field.getType() == ObjectId.class) {
-                            query.addCriteria(Criteria.where(tenantFilter.value()).is(new ObjectId(tenantFilterValue)));
+                            query.addCriteria(Criteria.where(tenantField.value()).is(new ObjectId(tenantFilterValue)));
                         } else {
-                            query.addCriteria(Criteria.where(tenantFilter.value()).is(tenantFilterValue));
+                            query.addCriteria(Criteria.where(tenantField.value()).is(tenantFilterValue));
                         }
                     } else {
                         throw new RuntimeException("Tenant filter value is null");

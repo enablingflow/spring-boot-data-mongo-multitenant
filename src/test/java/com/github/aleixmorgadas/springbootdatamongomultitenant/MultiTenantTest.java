@@ -2,13 +2,8 @@ package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.MultiTenantMongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -48,22 +43,40 @@ public class MultiTenantTest {
     @Test
     @Order(1)
     void receivesOnlyTenantA() {
-        tenants.register("default", () -> "tenantA");
+        tenants.set("tenantA");
         var users = repository.findAll();
         assertEquals(2, users.size());
     }
 
     @Test
     @Order(2)
+    void performAsTenant() {
+        tenants.performAsTenant("tenantC", () -> {
+            var users = repository.findAll();
+            assertEquals(1, users.size());
+        });
+    }
+
+    @Test
+    @Order(3)
+    void receivesAllAsRoot() {
+        tenants.performAsRoot(() -> {
+            var users = repository.findAll();
+            assertEquals(4, users.size());
+        });
+    }
+
+    @Test
+    @Order(4)
     void deleteAllIsTenantAware() {
         repository.deleteAll();
-        tenants.register("default", () -> "tenantB");
+        tenants.set("tenantB");
         var users = repository.findAll();
         assert users.size() == 1;
     }
 
     @Test
-    @Order(3)
+    @Order(5)
     void throwsExceptionWhenMultiTenantFilterIsNotPresentInAMultiTenantDocument() {
         var missingAnnotationEntity = new MissingAnnotationEntity();
         missingAnnotationEntityRepository.save(missingAnnotationEntity);
@@ -71,9 +84,9 @@ public class MultiTenantTest {
     }
 
     @Test
-    @Order(4)
+    @Order(6)
     void throwsExceptionWhenTenantDoesNotResolve() {
-        tenants.register("default", () -> null);
+        tenants.set(null);
         assertThrows(RuntimeException.class, () -> repository.findAll());
     }
 }
