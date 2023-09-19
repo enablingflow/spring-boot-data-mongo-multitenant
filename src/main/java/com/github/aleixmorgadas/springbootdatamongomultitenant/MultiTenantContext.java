@@ -1,5 +1,6 @@
 package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 public class MultiTenantContext {
@@ -28,6 +29,17 @@ public class MultiTenantContext {
         }
     }
 
+    public <T> T performAsRoot(Callable<T> callable) throws Exception {
+        asRoot.set(true);
+        T result;
+        try {
+            result = callable.call();
+        } finally {
+            asRoot.remove();
+        }
+        return result;
+    }
+
     public void performAsTenant(String tenant, ThrowingRunnable runnable) throws Exception {
         asTenant.set(tenant);
         try {
@@ -35,6 +47,17 @@ public class MultiTenantContext {
         } finally {
             asTenant.remove();
         }
+    }
+
+    public <T> T performAsTenant(String tenant, Callable<T> callable) throws Exception {
+        asTenant.set(tenant);
+        T result;
+        try {
+            result = callable.call();
+        } finally {
+            asTenant.remove();
+        }
+        return result;
     }
 
     public boolean isRoot() {

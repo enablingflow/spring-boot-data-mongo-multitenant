@@ -55,6 +55,9 @@ public class MultiTenantTest {
             var users = repository.findAll();
             assertEquals(1, users.size());
         });
+
+        var tenant = tenants.performAsTenant("tenantC", () -> repository.findAll());
+        assertEquals(1, tenant.size());
     }
 
     @Test
@@ -64,6 +67,9 @@ public class MultiTenantTest {
             var users = repository.findAll();
             assertEquals(4, users.size());
         });
+
+        var users = tenants.performAsRoot(() -> repository.findAll());
+        assertEquals(4, users.size());
     }
 
     @Test
