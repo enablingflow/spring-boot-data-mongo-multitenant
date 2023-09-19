@@ -2,8 +2,13 @@ package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.MultiTenantMongoTemplate;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -11,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = MultiTenantAutoConfiguration.class)
+@SpringBootTest(classes = MultiTenantTestConfig.class)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
