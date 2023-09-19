@@ -2,19 +2,16 @@ package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@DataMongoTest
+@SpringBootTest(classes = MultiTenantAutoConfiguration.class)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -34,7 +31,7 @@ public class MultiTenantTest {
     private MissingAnnotationEntityRepository missingAnnotationEntityRepository;
 
     @Autowired
-    private Map<String, Supplier<String>> tenants;
+    private MultiTenantContext tenants;
 
     @BeforeAll
     void setup() {
@@ -46,7 +43,7 @@ public class MultiTenantTest {
     @Test
     @Order(1)
     void receivesOnlyTenantA() {
-        tenants.put("default", () -> "tenantA");
+        tenants.register("default", () -> "tenantA");
         var users = repository.findAll();
         assertEquals(2, users.size());
     }
@@ -55,7 +52,7 @@ public class MultiTenantTest {
     @Order(2)
     void deleteAllIsTenantAware() {
         repository.deleteAll();
-        tenants.put("default", () -> "tenantB");
+        tenants.register("default", () -> "tenantB");
         var users = repository.findAll();
         assert users.size() == 1;
     }
@@ -71,7 +68,7 @@ public class MultiTenantTest {
     @Test
     @Order(4)
     void throwsExceptionWhenTenantDoesNotResolve() {
-        tenants.put("default", () -> null);
+        tenants.register("default", () -> null);
         assertThrows(RuntimeException.class, () -> repository.findAll());
     }
 }

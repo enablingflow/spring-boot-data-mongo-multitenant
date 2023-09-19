@@ -6,13 +6,14 @@ plugins {
 }
 
 group = "com.github.aleixmorgadas"
-version = "0.0.9"
+version = "0.0.10"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter:3.1.3")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.1.3")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")

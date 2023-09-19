@@ -1,6 +1,7 @@
 package org.springframework.data.mongodb.core;
 
 import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenant;
+import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantContext;
 import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantField;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
@@ -17,11 +18,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class MultiTenantMongoTemplate extends MongoTemplate {
-    private final Map<String, Supplier<String>> multiTenantFilter;
+    private final MultiTenantContext multiTenantContext;
 
-    public MultiTenantMongoTemplate(MongoDatabaseFactory mongoDbFactory, Map<String, Supplier<String>> multiTenantFilter) {
+    public MultiTenantMongoTemplate(MongoDatabaseFactory mongoDbFactory, MultiTenantContext multiTenantContext) {
         super(mongoDbFactory);
-        this.multiTenantFilter = multiTenantFilter;
+        this.multiTenantContext = multiTenantContext;
     }
 
     @Override
@@ -78,7 +79,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 if (field.isAnnotationPresent(MultiTenantField.class)) {
                     hasMultiTenantFilter = true;
                     var tenantFilter = field.getAnnotation(MultiTenantField.class);
-                    var tenantFilterValue = multiTenantFilter.get(tenantFilter.mapper()).get();
+                    var tenantFilterValue = multiTenantContext.get(tenantFilter.mapper());
                     if (tenantFilterValue != null) {
                         if (field.getType() == ObjectId.class) {
                             multiTenantQuery.put(tenantFilter.value(), new ObjectId(tenantFilterValue));
@@ -104,7 +105,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 if (field.isAnnotationPresent(MultiTenantField.class)) {
                     hasMultiTenantFilter = true;
                     var tenantFilter = field.getAnnotation(MultiTenantField.class);
-                    var tenantFilterValue = multiTenantFilter.get(tenantFilter.mapper()).get();
+                    var tenantFilterValue = multiTenantContext.get(tenantFilter.mapper());
                     if (tenantFilterValue != null) {
                         if (field.getType() == ObjectId.class) {
                             query.addCriteria(Criteria.where(tenantFilter.value()).is(new ObjectId(tenantFilterValue)));
