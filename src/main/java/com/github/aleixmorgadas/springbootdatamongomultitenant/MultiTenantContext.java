@@ -19,7 +19,7 @@ public class MultiTenantContext {
         tenant.remove();
     }
 
-    public void performAsRoot(Runnable runnable) {
+    public void performAsRoot(Runnable runnable) throws Exception {
         asRoot.set(true);
         try {
             runnable.run();
@@ -28,7 +28,7 @@ public class MultiTenantContext {
         }
     }
 
-    public void performAsTenant(String tenant, Runnable runnable) {
+    public void performAsTenant(String tenant, Runnable runnable) throws Exception {
         asTenant.set(tenant);
         try {
             runnable.run();

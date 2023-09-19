@@ -50,7 +50,7 @@ public class MultiTenantTest {
 
     @Test
     @Order(2)
-    void performAsTenant() {
+    void performAsTenant() throws Exception {
         tenants.performAsTenant("tenantC", () -> {
             var users = repository.findAll();
             assertEquals(1, users.size());
@@ -59,7 +59,7 @@ public class MultiTenantTest {
 
     @Test
     @Order(3)
-    void receivesAllAsRoot() {
+    void receivesAllAsRoot() throws Exception {
         tenants.performAsRoot(() -> {
             var users = repository.findAll();
             assertEquals(4, users.size());
