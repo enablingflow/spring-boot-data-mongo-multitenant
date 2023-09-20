@@ -41,16 +41,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.MultiTenantMongoTemplate;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantContext;
+import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantMongoRepository;
 
-import java.util.Map;
 
 @Configuration
+@EnableMongoRepositories(repositoryBaseClass = MultiTenantMongoRepository.class)
 public class MongoConfig {
+    @Bean
+    MultiTenantContext multiTenantContext() {
+        return new MultiTenantContext();
+    }
 
     @Bean
-    MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDbFactory) {
-        var filters = Map.of("", () -> "tenant-A");
-        return new MultiTenantMongoTemplate(mongoDbFactory, filters);
+    MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDbFactory, MultiTenantContext multiTenantContext) {
+        return new MultiTenantMongoTemplate(mongoDbFactory, multiTenantContext);
     }
 }
 ```
@@ -73,8 +79,25 @@ class Board {
     private String id;
     private String name;
     private String description;
+    
     @MultiTenantField("tenantId")
     private String tenantId;
+    // ...
+}
+```
+
+another example with `@DocumentReference`:
+
+```java
+@Document("teams")
+@MultiTenant
+public class Team {
+    @Id
+    ObjectId id;
+    
+    @DocumentReference
+    @MultiTenantField("organization.id")
+    Organization organization;
     // ...
 }
 ```
@@ -94,17 +117,21 @@ public class MultiTenantTest {
     @Autowired
     private BoardRepository repository;
 
+    @Autowired
+    private MultiTenantContext multiTenantContext;
+
     @BeforeEach
     void setup() {
         repository.save(new Board(null, "board 1", "", "tenant-A"));
         repository.save(new Board(null, "board 2", "", "tenant-A"));
         repository.save(new Board(null, "board 3", "", "tenant-B"));
         repository.save(new Board(null, "board 4", "", "tenant-C"));
+        multiTenantContext.set("tenant-A");
     }
 
     @AfterEach
     void clean() {
-        repository.deleteAll();
+        multiTenantContext.performAsRoot(() -> repository.deleteAll());
     }
 
     @Test
@@ -112,7 +139,32 @@ public class MultiTenantTest {
         var users = repository.findAll();
         assert users.size() == 2;
     }
+
+    @Test
+    void receivesOnlyTenantA() {
+        multiTenantContext.performAsRoot(() -> {
+            var users = repository.findAll();
+            assert users.size() == 4;
+        });
+        var users = multiTenantContext.performAsRoot(() -> repository.findAll());
+        assert users.size() == 4;
+    }
+
+    @Test
+    void receivesOnlyTenantA() {
+        multiTenantContext.performAsTenant("tenant-B", () -> {
+            var users = repository.findAll();
+            assert users.size() == 1;
+        });
+        var users = multiTenantContext.performAsTenant("tenant-B", () -> repository.findAll());
+        assert users.size() == 1;
+    }
 }
 ```
+
+
+In case of an Entity annotated with `@MultiTenant` and `@Document` without a field with `@MultiTenantField`, it will **throw a run time exception**. 
+
+```java
 
 See [MultiTenantTest](./src/test/java/com/github/aleixmorgadas/springbootdatamongomultitenant/MultiTenantTest.java) for more examples.
