@@ -165,6 +165,4 @@ public class MultiTenantTest {
 
 In case of an Entity annotated with `@MultiTenant` and `@Document` without a field with `@MultiTenantField`, it will **throw a run time exception**. 
 
-```java
-
 See [MultiTenantTest](./src/test/java/com/github/aleixmorgadas/springbootdatamongomultitenant/MultiTenantTest.java) for more examples.
