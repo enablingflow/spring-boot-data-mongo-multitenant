@@ -8,8 +8,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = MultiTenantTestConfig.class)
 @Testcontainers
@@ -29,6 +28,9 @@ public class MultiTenantTest {
 
     @Autowired
     private TenantAsObjectIdRepository tenantAsObjectIdRepository;
+
+    @Autowired
+    private WithNullableTenantRepository withNullableTenantRepository;
 
     @Autowired
     private MissingAnnotationEntityRepository missingAnnotationEntityRepository;
@@ -136,5 +138,15 @@ public class MultiTenantTest {
             var savedUser = tenantAsObjectIdRepository.save(user);
             assertEquals("507f1f77bcf86cd799439011", savedUser.tenantId.toString());
         });
+    }
+
+    @Test
+    @Order(10)
+    void withoutTenant() throws Exception {
+        var user = new WithNullableTenant(null, null);
+        var savedUser = withNullableTenantRepository.save(user);
+
+        assertNotNull(savedUser.id);
+        assertNull(savedUser.tenant);
     }
 }

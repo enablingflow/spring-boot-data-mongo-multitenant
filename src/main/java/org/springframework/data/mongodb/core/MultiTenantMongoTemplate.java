@@ -64,6 +64,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 return super.doInsert(collectionName, objectToSave, writer);
             }
             var field = getMultiTenantField(entityClass);
+            var tenantFilter = field.getAnnotation(MultiTenantField.class);
             var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
             if (tenantFilterValue != null) {
                 field.setAccessible(true);
@@ -76,8 +77,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
-
-            } else {
+            } else if (!tenantFilter.nullable()) {
                 throw new RuntimeException("Tenant filter value is null");
             }
         }
@@ -92,6 +92,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 return super.doSave(collectionName, objectToSave, writer);
             }
             var field = getMultiTenantField(entityClass);
+            var tenantFilter = field.getAnnotation(MultiTenantField.class);
             var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
             if (tenantFilterValue != null) {
                 field.setAccessible(true);
@@ -100,7 +101,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
-            } else {
+            } else if (!tenantFilter.nullable()){
                 throw new RuntimeException("Tenant filter value is null");
             }
         }

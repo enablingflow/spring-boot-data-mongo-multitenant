@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MultiTenantField {
     String value() default "";
+
+    boolean nullable() default false;
 }
