@@ -12,10 +12,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories(repositoryBaseClass = MultiTenantMongoRepository.class)
 public class MultiTenantTestConfig {
     @Bean
-    public MultiTenantContext multiTenantContext() {
-        MultiTenantContext multiTenantContext = new MultiTenantContext();
-        multiTenantContext.set(() -> "tenantA");
-        return multiTenantContext;
+    public MultiTenantContext<String> multiTenantContext() {
+        return new MultiTenantContext<>();
     }
 
     @Bean

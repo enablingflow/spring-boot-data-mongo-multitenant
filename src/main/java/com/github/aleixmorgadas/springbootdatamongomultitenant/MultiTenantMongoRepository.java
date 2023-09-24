@@ -17,8 +17,6 @@ public class MultiTenantMongoRepository<T, ID> extends SimpleMongoRepository<T, 
         this.entityInformation = metadata;
     }
 
-
-
     @Override
     public void deleteAll() {
         mongoOperations.remove(new Query(), entityInformation.getJavaType(), entityInformation.getCollectionName());

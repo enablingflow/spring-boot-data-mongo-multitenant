@@ -31,19 +31,27 @@ public class MultiTenantTest {
     private MissingAnnotationEntityRepository missingAnnotationEntityRepository;
 
     @Autowired
-    private MultiTenantContext tenants;
+    private MultiTenantContext<String> tenants;
 
-    @BeforeAll
-    void setup() {
-        repository.save(new User(null, "tenantA"));
-        repository.save(new User(null, "tenantA"));
-        repository.save(new User(null, "tenantB"));
-        repository.save(new User(null, "tenantC"));
+    @BeforeEach
+    void setup() throws Exception {
+        tenants.performAsRoot(() -> {
+            repository.save(new User(null, "Alex", "tenantA"));
+            repository.save(new User(null, "Anna", "tenantA"));
+            repository.save(new User(null, "Bart", "tenantB"));
+            repository.save(new User(null, "Clementine", "tenantC"));
+        });
     }
+
+    @AfterEach
+    void clean() throws Exception {
+        tenants.performAsRoot(() -> repository.deleteAll());
+    }
+
     @Test
     @Order(1)
     void receivesOnlyTenantA() {
-        tenants.set(() -> "tenantA");
+        tenants.set("tenantA");
         var users = repository.findAll();
         assertEquals(2, users.size());
     }
@@ -76,7 +84,7 @@ public class MultiTenantTest {
     @Order(4)
     void deleteAllIsTenantAware() {
         repository.deleteAll();
-        tenants.set(() -> "tenantB");
+        tenants.set("tenantB");
         var users = repository.findAll();
         assert users.size() == 1;
     }
@@ -85,7 +93,7 @@ public class MultiTenantTest {
     @Order(5)
     void throwsExceptionWhenMultiTenantFilterIsNotPresentInAMultiTenantDocument() {
         var missingAnnotationEntity = new MissingAnnotationEntity();
-        missingAnnotationEntityRepository.save(missingAnnotationEntity);
+        assertThrows(RuntimeException.class, () -> missingAnnotationEntityRepository.save(missingAnnotationEntity));
         assertThrows(RuntimeException.class, () -> missingAnnotationEntityRepository.findAll());
     }
 
@@ -94,5 +102,26 @@ public class MultiTenantTest {
     void throwsExceptionWhenTenantDoesNotResolve() {
         tenants.set(null);
         assertThrows(RuntimeException.class, () -> repository.findAll());
+    }
+
+    @Test
+    @Order(7)
+    void modifyUser() throws Exception {
+        var userByTenantA = tenants.performAsTenant("tenantA", () -> {
+            var user = repository.findAll().stream().findFirst().get();
+            user.setName("tenantA-modified");
+            return repository.save(user);
+        });
+        assertEquals("tenantA-modified", userByTenantA.name);
+    }
+
+    @Test
+    @Order(8)
+    void setTenantOnSave() throws Exception {
+        tenants.performAsTenant("tenantA", () -> {
+            var user = new User(null, "name", null);
+            var savedUser = repository.save(user);
+            assertEquals("tenantA", savedUser.tenantId);
+        });
     }
 }

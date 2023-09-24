@@ -3,16 +3,16 @@ package com.github.aleixmorgadas.springbootdatamongomultitenant;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-public class MultiTenantContext {
+public class MultiTenantContext<T> {
     private static final ThreadLocal<Boolean> asRoot = new ThreadLocal<>();
-    private static final ThreadLocal<String> asTenant = new ThreadLocal<>();
-    private static final ThreadLocal<Supplier<String>> tenant = new ThreadLocal<>();
+    private static final ThreadLocal<Object> asTenant = new ThreadLocal<>();
+    private static final ThreadLocal<Object> tenant = new ThreadLocal<>();
 
-    public String get() {
-        return tenant.get().get();
+    public T get() {
+        return (T) tenant.get();
     }
 
-    public void set(Supplier<String> value) {
+    public void set(T value) {
         tenant.set(value);
     }
 
@@ -40,7 +40,7 @@ public class MultiTenantContext {
         return result;
     }
 
-    public void performAsTenant(String tenant, ThrowingRunnable runnable) throws Exception {
+    public void performAsTenant(T tenant, ThrowingRunnable runnable) throws Exception {
         asTenant.set(tenant);
         try {
             runnable.run();
@@ -68,7 +68,7 @@ public class MultiTenantContext {
         return asTenant.get() != null;
     }
 
-    public String getScopedTenant() {
-        return asTenant.get();
+    public T getScopedTenant() {
+        return (T) asTenant.get();
     }
 }
