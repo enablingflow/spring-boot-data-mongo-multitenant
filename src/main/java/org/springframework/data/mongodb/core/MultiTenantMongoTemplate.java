@@ -68,7 +68,11 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             if (tenantFilterValue != null) {
                 field.setAccessible(true);
                 try {
-                    field.set(objectToSave, tenantFilterValue);
+                    if (field.getType().getName().equals("org.bson.types.ObjectId")) {
+                        field.set(objectToSave, new ObjectId((String) tenantFilterValue));
+                    } else {
+                        field.set(objectToSave, tenantFilterValue);
+                    }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }

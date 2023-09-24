@@ -28,6 +28,9 @@ public class MultiTenantTest {
     private UserRepository repository;
 
     @Autowired
+    private TenantAsObjectIdRepository tenantAsObjectIdRepository;
+
+    @Autowired
     private MissingAnnotationEntityRepository missingAnnotationEntityRepository;
 
     @Autowired
@@ -122,6 +125,16 @@ public class MultiTenantTest {
             var user = new User(null, "name", null);
             var savedUser = repository.save(user);
             assertEquals("tenantA", savedUser.tenantId);
+        });
+    }
+
+    @Test
+    @Order(9)
+    void setTenantWhichItIsAnObjectId() throws Exception {
+        tenants.performAsTenant("507f1f77bcf86cd799439011", () -> {
+            var user = new TenantAsObjectId(null, null);
+            var savedUser = tenantAsObjectIdRepository.save(user);
+            assertEquals("507f1f77bcf86cd799439011", savedUser.tenantId.toString());
         });
     }
 }
