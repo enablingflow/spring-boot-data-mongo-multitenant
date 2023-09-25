@@ -1,4 +1,4 @@
-package com.github.aleixmorgadas.springbootdatamongomultitenant;
+package com.github.enablingflow.springbootdatamongomultitenant;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

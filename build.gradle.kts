@@ -5,8 +5,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.0"
 }
 
-group = "com.github.aleixmorgadas"
-version = "0.0.21"
+group = "com.github.enablingflow"
+version = "0.0.22"
 
 repositories {
     mavenCentral()
@@ -46,7 +46,7 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            groupId = "com.github.aleixmorgadas"
+            groupId = "com.github.enablingflow"
             artifactId = "spring-boot-data-mongo-multitenant"
 
             from(components["java"])

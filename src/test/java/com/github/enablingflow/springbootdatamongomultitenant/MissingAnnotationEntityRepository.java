@@ -1,4 +1,4 @@
-package com.github.aleixmorgadas.springbootdatamongomultitenant;
+package com.github.enablingflow.springbootdatamongomultitenant;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.repository.CrudRepository;

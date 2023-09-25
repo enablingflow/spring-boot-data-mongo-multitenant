@@ -1,8 +1,8 @@
 package org.springframework.data.mongodb.core;
 
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenant;
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantContext;
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantField;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenant;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantContext;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantField;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;

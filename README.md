@@ -1,7 +1,7 @@
 # Spring Boot Data MongoDB Multi-Tenant
 
-[![](https://jitpack.io/v/aleixmorgadas/spring-boot-data-mongo-multitenant.svg)](https://jitpack.io/#aleixmorgadas/spring-boot-data-mongo-multitenant)
-![gradle workflow](https://github.com/aleixmorgadas/spring-boot-data-mongo-multitenant/actions/workflows/gradle.yml/badge.svg)
+[![](https://jitpack.io/v/enablingflow/spring-boot-data-mongo-multitenant.svg)](https://jitpack.io/#enablingflow/spring-boot-data-mongo-multitenant)
+![gradle workflow](https://github.com/enablingflow/spring-boot-data-mongo-multitenant/actions/workflows/gradle.yml/badge.svg)
 
 :warning: Working in progress
 
@@ -17,17 +17,17 @@ build.gradle.kts:
 repositories {
     mavenCentral() {
         content {
-            excludeGroup("com.github.aleixmorgadas") // improves speed
+            excludeGroup("com.github.enablingflow") // improves speed
         }
     }
     maven(url="https://jitpack.io") {
         content {
-            includeGroup("com.github.aleixmorgadas")
+            includeGroup("com.github.enablingflow")
         }
     }
 }
 dependencies {
-    implementation("com.github.aleixmorgadas:spring-boot-data-mongo-multitenant:0.0.7")
+    implementation("com.github.enablingflow:spring-boot-data-mongo-multitenant:0.0.7")
 }
 ```
 
@@ -42,8 +42,8 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.MultiTenantMongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantContext;
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantMongoRepository;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantContext;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantMongoRepository;
 
 
 @Configuration
@@ -66,8 +66,8 @@ public class MongoConfig {
 Mark your entity with `@MultiTenant` annotation and mark the field that will be used to filter the data with `@MultiTenantField` annotation:
 
 ```java
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenant;
-import com.github.aleixmorgadas.springbootdatamongomultitenant.MultiTenantField;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenant;
+import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantField;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import org.bson.types.ObjectId;
@@ -165,7 +165,7 @@ public class MultiTenantTest {
 
 In case of an Entity annotated with `@MultiTenant` and `@Document` without a field with `@MultiTenantField`, it will **throw a run time exception**. 
 
-See [MultiTenantTest](./src/test/java/com/github/aleixmorgadas/springbootdatamongomultitenant/MultiTenantTest.java) for more examples.
+See [MultiTenantTest](./src/test/java/com/github/enablingflow/springbootdatamongomultitenant/MultiTenantTest.java) for more examples.
 
 ## Docs
 

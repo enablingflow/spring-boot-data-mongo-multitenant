@@ -1,4 +1,4 @@
-package com.github.aleixmorgadas.springbootdatamongomultitenant;
+package com.github.enablingflow.springbootdatamongomultitenant;
 
 @FunctionalInterface
 public interface ThrowingRunnable {

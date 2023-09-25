@@ -1,4 +1,4 @@
-package com.github.aleixmorgadas.springbootdatamongomultitenant;
+package com.github.enablingflow.springbootdatamongomultitenant;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Query;

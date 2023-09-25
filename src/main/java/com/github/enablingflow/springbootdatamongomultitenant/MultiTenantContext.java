@@ -1,7 +1,6 @@
-package com.github.aleixmorgadas.springbootdatamongomultitenant;
+package com.github.enablingflow.springbootdatamongomultitenant;
 
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 
 public class MultiTenantContext<T> {
     private static final ThreadLocal<Boolean> asRoot = new ThreadLocal<>();
