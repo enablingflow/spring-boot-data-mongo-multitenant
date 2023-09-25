@@ -8,6 +8,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = MultiTenantTestConfig.class)
@@ -148,5 +149,31 @@ public class MultiTenantTest {
 
         assertNotNull(savedUser.id);
         assertNull(savedUser.tenant);
+    }
+
+    @Test
+    @Order(11)
+    void itShouldNotOverwriteTenant() throws Exception {
+        var user = tenants.performAsTenant("tenantA", () -> repository.save(new User(null, "aleix", null)));
+        assertThat(user.id).isNotNull();
+        assertThat(user.name).isEqualTo("aleix");
+        assertThat(user.tenantId).isEqualTo("tenantA");
+        user.setName("Aleix");
+        assertThrows(RuntimeException.class, () -> tenants.performAsTenant("tenantB", () -> repository.save(user)));
+    }
+
+    @Test
+    @Order(12)
+    void itShouldThrowExceptionWhenTenantIsNotTheSameAsStored() throws Exception {
+        var savedUser = tenants.performAsTenant("507f1f77bcf86cd799439011", () -> {
+            var user = new TenantAsObjectId(null, null);
+            return tenantAsObjectIdRepository.save(user);
+        });
+        assertEquals("507f1f77bcf86cd799439011", savedUser.tenantId.toString());
+        assertThrows(RuntimeException.class, () -> {
+            tenants.performAsTenant(
+                    "666f1f77bcf86cd799439777",
+                    () -> tenantAsObjectIdRepository.save(savedUser));
+        });
     }
 }

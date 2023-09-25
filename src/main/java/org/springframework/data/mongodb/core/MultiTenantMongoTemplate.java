@@ -63,23 +63,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             if (multiTenantContext.isRoot()) {
                 return super.doInsert(collectionName, objectToSave, writer);
             }
-            var field = getMultiTenantField(entityClass);
-            var tenantFilter = field.getAnnotation(MultiTenantField.class);
-            var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
-            if (tenantFilterValue != null) {
-                field.setAccessible(true);
-                try {
-                    if (field.getType().getName().equals("org.bson.types.ObjectId")) {
-                        field.set(objectToSave, new ObjectId((String) tenantFilterValue));
-                    } else {
-                        field.set(objectToSave, tenantFilterValue);
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (!tenantFilter.nullable()) {
-                throw new RuntimeException("Tenant filter value is null");
-            }
+            applyMultiTenantField(objectToSave, entityClass);
         }
         return super.doInsert(collectionName, objectToSave, writer);
     }
@@ -91,19 +75,7 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             if (multiTenantContext.isRoot()) {
                 return super.doSave(collectionName, objectToSave, writer);
             }
-            var field = getMultiTenantField(entityClass);
-            var tenantFilter = field.getAnnotation(MultiTenantField.class);
-            var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
-            if (tenantFilterValue != null) {
-                field.setAccessible(true);
-                try {
-                    field.set(objectToSave, tenantFilterValue);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            } else if (!tenantFilter.nullable()){
-                throw new RuntimeException("Tenant filter value is null");
-            }
+            applyMultiTenantField(objectToSave, entityClass);
         }
         return super.doSave(collectionName, objectToSave, writer);
     }
@@ -177,5 +149,42 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             }
         }
         throw new RuntimeException("Entity " + entityClass.getName() + " is annotated with @MultiTenant but no @MultiTenantField is present");
+    }
+
+    private <T> void applyMultiTenantField(T objectToSave, Class<?> entityClass) {
+        var field = getMultiTenantField(entityClass);
+        var tenantFilter = field.getAnnotation(MultiTenantField.class);
+        var tenantFilterValue = multiTenantContext.hasScopedTenant() ? multiTenantContext.getScopedTenant() : multiTenantContext.get();
+        if (tenantFilterValue != null) {
+            field.setAccessible(true);
+            try {
+                var value = field.get(objectToSave);
+                if (value == null) {
+                    if (field.getType().getName().equals("org.bson.types.ObjectId")) {
+                        ObjectId tenantId = new ObjectId((String) tenantFilterValue);
+                        field.set(objectToSave, tenantId);
+                    } else {
+                        field.set(objectToSave, tenantFilterValue);
+                    }
+                }
+                else {
+                    if (field.getType().getName().equals("org.bson.types.ObjectId")) {
+                        ObjectId tenantId = new ObjectId((String) tenantFilterValue);
+                        if (!value.equals(tenantId)) {
+                            throw new RuntimeException("Tenant filter value is not the same as the one in the object to save");
+                        }
+                    } else {
+                        if (!value.equals(tenantFilterValue)) {
+                            throw new RuntimeException("Tenant filter value is not the same as the one in the object to save");
+                        }
+                        field.set(objectToSave, value);
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (!tenantFilter.nullable()) {
+            throw new RuntimeException("Tenant filter value is null");
+        }
     }
 }
