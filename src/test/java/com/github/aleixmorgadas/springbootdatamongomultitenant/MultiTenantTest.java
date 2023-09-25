@@ -1,5 +1,6 @@
 package com.github.aleixmorgadas.springbootdatamongomultitenant;
 
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -175,5 +176,15 @@ public class MultiTenantTest {
                     "666f1f77bcf86cd799439777",
                     () -> tenantAsObjectIdRepository.save(savedUser));
         });
+    }
+
+    @Test
+    @Order(13)
+    void itAllowsToStoreOtherTenantDocsWhenRoot() throws Exception {
+        var savedUser = tenants.performAsRoot(() -> {
+            var user = new TenantAsObjectId(null, new ObjectId("507f1f77bcf86cd799439011"));
+            return tenantAsObjectIdRepository.save(user);
+        });
+        assertEquals("507f1f77bcf86cd799439011", savedUser.tenantId.toString());
     }
 }
