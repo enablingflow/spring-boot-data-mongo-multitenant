@@ -199,4 +199,16 @@ public class MultiTenantTest {
             assertThat(tenants.isRoot()).isTrue();
         });
     }
+
+    @Test
+    @Order(15)
+    void itDoesNotLoseTheContextWhenNestingAsTenantExecutions() throws Exception {
+        tenants.performAsTenant("tenantA", () -> {
+            assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
+            tenants.performAsTenant("tenantA", () -> {
+                assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
+            });
+            assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
+        });
+    }
 }

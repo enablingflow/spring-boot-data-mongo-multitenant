@@ -47,6 +47,12 @@ public class MultiTenantContext<T> {
     }
 
     public void performAsTenant(T tenant, ThrowingRunnable runnable) throws Exception {
+        if (asTenant.get() != null && asTenant.get().equals(tenant)) {
+            runnable.run();
+            return;
+        } else if (asTenant.get() != null && !asTenant.get().equals(tenant)) {
+            throw new IllegalStateException("Cannot change tenant");
+        }
         asTenant.set(tenant);
         try {
             runnable.run();
@@ -56,6 +62,11 @@ public class MultiTenantContext<T> {
     }
 
     public <T> T performAsTenant(String tenant, Callable<T> callable) throws Exception {
+        if (asTenant.get() != null && asTenant.get().equals(tenant)) {
+            return callable.call();
+        } else if (asTenant.get() != null && !asTenant.get().equals(tenant)) {
+            throw new IllegalStateException("Cannot change tenant");
+        }
         asTenant.set(tenant);
         T result;
         try {
