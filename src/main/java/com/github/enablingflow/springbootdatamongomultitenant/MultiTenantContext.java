@@ -33,6 +33,9 @@ public class MultiTenantContext<T> {
     }
 
     public <T> T performAsRoot(Callable<T> callable) throws Exception {
+        if (asRoot.get() != null && asRoot.get()) {
+            return callable.call();
+        }
         asRoot.set(true);
         T result;
         try {
