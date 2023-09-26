@@ -20,6 +20,10 @@ public class MultiTenantContext<T> {
     }
 
     public void performAsRoot(ThrowingRunnable runnable) throws Exception {
+        if (asRoot.get() != null && asRoot.get()) {
+            runnable.run();
+            return;
+        }
         asRoot.set(true);
         try {
             runnable.run();
