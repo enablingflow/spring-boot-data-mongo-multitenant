@@ -1,10 +1,11 @@
 package com.github.enablingflow.springbootdatamongomultitenant;
 
+import java.util.LinkedList;
 import java.util.concurrent.Callable;
 
 public class MultiTenantContext<T> {
     private static final ThreadLocal<Boolean> asRoot = new ThreadLocal<>();
-    private static final ThreadLocal<Object> asTenant = new ThreadLocal<>();
+    private static final ThreadLocal<LinkedList<Object>> asTenant = new ThreadLocal<>();
     private static final ThreadLocal<Object> tenant = new ThreadLocal<>();
 
     public T get() {
@@ -47,32 +48,27 @@ public class MultiTenantContext<T> {
     }
 
     public void performAsTenant(T tenant, ThrowingRunnable runnable) throws Exception {
-        if (asTenant.get() != null && asTenant.get().equals(tenant)) {
-            runnable.run();
-            return;
-        } else if (asTenant.get() != null && !asTenant.get().equals(tenant)) {
-            throw new IllegalStateException("Cannot change tenant");
+        if (asTenant.get() == null) {
+            asTenant.set(new LinkedList<>());
         }
-        asTenant.set(tenant);
+        asTenant.get().add(tenant);
         try {
             runnable.run();
         } finally {
-            asTenant.remove();
+            asTenant.get().pollLast();
         }
     }
 
     public <T> T performAsTenant(String tenant, Callable<T> callable) throws Exception {
-        if (asTenant.get() != null && asTenant.get().equals(tenant)) {
-            return callable.call();
-        } else if (asTenant.get() != null && !asTenant.get().equals(tenant)) {
-            throw new IllegalStateException("Cannot change tenant");
+        if (asTenant.get() == null) {
+            asTenant.set(new LinkedList<>());
         }
-        asTenant.set(tenant);
+        asTenant.get().add(tenant);
         T result;
         try {
             result = callable.call();
         } finally {
-            asTenant.remove();
+            asTenant.get().pollLast();
         }
         return result;
     }
@@ -82,10 +78,10 @@ public class MultiTenantContext<T> {
     }
 
     public boolean hasScopedTenant() {
-        return asTenant.get() != null;
+        return asTenant.get() != null && !asTenant.get().isEmpty();
     }
 
     public T getScopedTenant() {
-        return (T) asTenant.get();
+        return (T) asTenant.get().getLast();
     }
 }

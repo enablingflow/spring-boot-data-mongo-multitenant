@@ -202,11 +202,11 @@ public class MultiTenantTest {
 
     @Test
     @Order(15)
-    void itDoesNotLoseTheContextWhenNestingAsTenantExecutions() throws Exception {
+    void itAllowsToNestTenantContext() throws Exception {
         tenants.performAsTenant("tenantA", () -> {
             assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
-            tenants.performAsTenant("tenantA", () -> {
-                assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
+            tenants.performAsTenant("tenantB", () -> {
+                assertThat(tenants.getScopedTenant()).isEqualTo("tenantB");
             });
             assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
         });
