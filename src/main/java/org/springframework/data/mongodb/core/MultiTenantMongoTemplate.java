@@ -5,6 +5,7 @@ import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantContext
 import com.github.enablingflow.springbootdatamongomultitenant.MultiTenantField;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.UpdateDefinition;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 
 public class MultiTenantMongoTemplate extends MongoTemplate {
@@ -78,6 +80,45 @@ public class MultiTenantMongoTemplate extends MongoTemplate {
             applyMultiTenantField(objectToSave, entityClass);
         }
         return super.doSave(collectionName, objectToSave, writer);
+    }
+
+    @Override
+    protected <T> Collection<T> doInsertBatch(String collectionName, Collection<? extends T> batchToSave, MongoWriter<T> writer) {
+        if (multiTenantContext.isRoot()) {
+            return super.doInsertBatch(collectionName, batchToSave, writer);
+        }
+        batchToSave.forEach(entity -> {
+            var entityClass = entity.getClass();
+            if (isMultiTenant(entityClass)) {
+                applyMultiTenantField(entity, entityClass);
+            }
+        });
+        return super.doInsertBatch(collectionName, batchToSave, writer);
+    }
+
+    @Override
+    protected <T> Collection<T> doInsertAll(Collection<? extends T> listToSave, MongoWriter<T> writer) {
+        if (multiTenantContext.isRoot()) {
+            return super.doInsertAll(listToSave, writer);
+        }
+        listToSave.forEach(entity -> {
+            var entityClass = entity.getClass();
+            if (isMultiTenant(entityClass)) {
+                applyMultiTenantField(entity, entityClass);
+            }
+        });
+        return super.doInsertAll(listToSave, writer);
+    }
+
+    @Override
+    protected UpdateResult doUpdate(String collectionName, Query query, UpdateDefinition update, Class<?> entityClass, boolean upsert, boolean multi) {
+        if (multiTenantContext.isRoot()) {
+            return super.doUpdate(collectionName, query, update, entityClass, upsert, multi);
+        }
+        if (isMultiTenant(entityClass)) {
+            query = multiTenantFilter(query, entityClass);
+        }
+        return super.doUpdate(collectionName, query, update, entityClass, upsert, multi);
     }
 
     @Override

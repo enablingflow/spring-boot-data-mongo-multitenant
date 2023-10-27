@@ -9,6 +9,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -210,5 +212,15 @@ public class MultiTenantTest {
             });
             assertThat(tenants.getScopedTenant()).isEqualTo("tenantA");
         });
+    }
+
+    @Test
+    @Order(16)
+    void savingAllAlsoAppliesMultiTenancy() throws Exception {
+        var users = tenants.performAsTenant("tenantA", () -> repository.saveAll(List.of(new User(null, "Aleix", null))));
+        assertThat(users).hasSize(1);
+        assertThat(users.get(0).id).isNotNull();
+        assertThat(users.get(0).name).isEqualTo("Aleix");
+        assertThat(users.get(0).tenantId).isEqualTo("tenantA");
     }
 }
